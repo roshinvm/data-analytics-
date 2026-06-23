@@ -1,113 +1,113 @@
-
-import streamlit as st
-
-# Initialize session state
-if "students" not in st.session_state:
-    st.session_state.students = []
-
-# Function to calculate average
-def calculate_average(scores):
-    if len(scores) == 0:
+students=[]
+def calc_avg(scores):
+    if len(scores)==0:
         return 0
-    return sum(scores) / len(scores)
+    else:
+        return sum(scores)/len(scores)
 
-# Function to assign grade
-def get_letter_grade(avg):
-    if avg >= 90:
+def get_grade(average):
+    if average >= 90:
         return "A"
-    elif avg >= 80:
+    elif average >=80:
         return "B"
-    elif avg >= 70:
+    elif average >= 70:
         return "C"
-    elif avg >= 60:
+    elif average >= 60:
         return "D"
     else:
         return "F"
 
-# App Title
-st.title("🎓 Student Grade Calculator & Report Card")
+def add_student ():
+    name=input("Enter Student Name: ")
+    scores=[]
+    while True:
+        score_input= input("Enter score (or 'done'): ")
+        if score_input.lower()== "done":
+            break
+        try:
+            score=float(score_input)
+            if 0<=score <=100:
+                scores.append(score)
+            else:
+                print("Scores must be in between 0 and 100 ")
+        except ValueError:
+            print("Invalid input. Enter a number or 'done'.")
 
-menu = st.sidebar.selectbox(
-    "Menu",
-    ["Add Student", "View Students", "Class Report"]
-)
+    average=calc_avg(scores)
+    grade=get_grade(average)
 
-# Add Student
-if menu == "Add Student":
-    st.header("Add Student")
+    student={
+        "Name":name,
+        "Scores":scores,
+        "Average":average,
+        "Grade":grade
+    }
+    students.append(student)
 
-    name = st.text_input("Student Name")
-    score_input = st.text_input(
-        "Enter scores separated by commas (Example: 85,90,78)"
+    print(f"\n Added {name}")
+    print(f"Average: {average:.2f}")
+    print(f"Grade: {grade}\n")
+
+def view():
+    if len(students)==0:
+        print("\n No Students Found \n")
+        return
+    print("\n ----Students List----")
+    for student in students:
+        print(
+            f"Name: {student['Name']} |"
+            f"Average: {student['Average']} |"
+            f"Grade: {student['Grade']}"
+        )
+    print()
+
+def show():
+    if len(students) == 0:
+        print("\n No student data found.\n")
+        return
+    highest = students[0]
+    lowest = students[0]
+    total_average = 0
+    for student in students:
+        total_average+=student["Average"]
+
+        if student["Average"] > highest["Average"] :
+            highest = student 
+        if student["Average"] <lowest["Average"] :
+            lowest = student
+    class_average= total_average/len(students)
+
+    print("\n--- Class Report ---")
+    print(f"Total students: {len(students)}")
+    print(
+        f"Highest Average: {highest["Name"]}"
+        f"({highest["Average"]:.2f})"
     )
+    print(
+        f"Lowest Average: {lowest["Name"]}"
+        f"({lowest["Average"]:.2f})"
+    )
+    print(f"Class average: {class_average:.2f}\n")
 
-    if st.button("Add Student"):
-        if name and score_input:
-            try:
-                scores = [float(score.strip()) for score in score_input.split(",")]
+def main():
+    while True:
+        print("\n=== Grade Calculator ===")
+        print("1. Add Student")
+        print("2. View All Students")
+        print("3. Class Report")
+        print("4. Exit")
 
-                valid = all(0 <= score <= 100 for score in scores)
+        choice=input("Enter choice: ")
+        if choice == "1":
+            add_student()
+        elif choice =="2":
+            view()
+        elif choice == "3":
+            show()
+        elif choice=="4":
+            print("Exiting Program....")
+            break
+        else:
+            print("Invalid Choice. Try again\n")
 
-                if valid:
-                    avg = calculate_average(scores)
-                    grade = get_letter_grade(avg)
-
-                    student = {
-                        "name": name,
-                        "scores": scores,
-                        "average": avg,
-                        "grade": grade
-                    }
-
-                    st.session_state.students.append(student)
-
-                    st.success(
-                        f"Added {name} - Average: {avg:.2f} - Grade: {grade}"
-                    )
-                else:
-                    st.error("Scores must be between 0 and 100.")
-            except:
-                st.error("Please enter valid numeric scores.")
-
-# View Students
-elif menu == "View Students":
-    st.header("All Students")
-
-    if st.session_state.students:
-        for student in st.session_state.students:
-            st.write(
-                f"**{student['name']}** | "
-                f"Scores: {student['scores']} | "
-                f"Average: {student['average']:.2f} | "
-                f"Grade: {student['grade']}"
-            )
-    else:
-        st.info("No students added yet.")
-
-# Class Report
-elif menu == "Class Report":
-    st.header("Class Report")
-
-    students = st.session_state.students
-
-    if students:
-        highest = max(students, key=lambda x: x["average"])
-        lowest = min(students, key=lambda x: x["average"])
-
-        class_average = (
-            sum(student["average"] for student in students)
-            / len(students)
-        )
-
-        st.write(f"**Total Students:** {len(students)}")
-        st.write(
-            f"**Highest Average:** {highest['name']} "
-            f"({highest['average']:.2f})"
-        )
-        st.write(
-            f"**Lowest Average:** {lowest['name']} "
-            f"({lowest['average']:.2f})"
-        )
-        st.write(f"**Class Average:** {class_average:.2f}")
-    else:
-        st.info("No student data available.")
+main()
